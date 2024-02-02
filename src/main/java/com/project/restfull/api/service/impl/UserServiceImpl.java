@@ -4,6 +4,7 @@ import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.UserBody;
 import com.project.restfull.api.repository.UserRepo;
 import com.project.restfull.api.service.UserService;
+import com.project.restfull.api.service.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepo userRepo;
     @Autowired
-    private Validator validator;
+    private ValidationService validationService;
 
     /*@Autowired
     private PasswordEncoder passwordEncoder;*/
@@ -28,10 +29,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void register(UserBody userBody) {
-        Set<ConstraintViolation<UserBody>> constraintViolations = validator.validate(userBody);
-        if (constraintViolations.size() > 0) {
-            throw new ConstraintViolationException(constraintViolations);
-        }
+        validationService.validation(userBody);
 
         // VALIDATION USERNAME
         User userValidation = userRepo.findUserByUsername(userBody.getUsername());

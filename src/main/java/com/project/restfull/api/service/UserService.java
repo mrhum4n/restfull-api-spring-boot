@@ -1,5 +1,6 @@
 package com.project.restfull.api.service;
 
+import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.UserBody;
 
 public interface UserService {
