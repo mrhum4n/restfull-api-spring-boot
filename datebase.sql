@@ -1,0 +1,2 @@
+CREATE DATABASE db_learn_rest_full;
+USE db_learn_rest_full;
