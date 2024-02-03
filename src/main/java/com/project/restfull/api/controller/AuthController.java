@@ -1,7 +1,7 @@
 package com.project.restfull.api.controller;
 
 import com.project.restfull.api.model.User;
-import com.project.restfull.api.pojo.LoginBody;
+import com.project.restfull.api.pojo.LoginRequest;
 import com.project.restfull.api.pojo.TokenResponse;
 import com.project.restfull.api.pojo.WebResponse;
 import com.project.restfull.api.service.AuthService;
@@ -16,8 +16,8 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping(path = "/auth/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<TokenResponse> login(@RequestBody LoginBody loginBody) {
-        TokenResponse tokenResponse = authService.login(loginBody);
+    public WebResponse<TokenResponse> login(@RequestBody LoginRequest loginRequest) {
+        TokenResponse tokenResponse = authService.login(loginRequest);
         WebResponse<TokenResponse> webResponse = new WebResponse<>();
         webResponse.setData(tokenResponse);
         return webResponse;

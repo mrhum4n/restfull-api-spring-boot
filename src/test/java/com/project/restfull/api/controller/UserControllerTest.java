@@ -3,9 +3,9 @@ package com.project.restfull.api.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.restfull.api.model.User;
-import com.project.restfull.api.pojo.UserBody;
+import com.project.restfull.api.pojo.UserRequest;
 import com.project.restfull.api.pojo.UserResponse;
-import com.project.restfull.api.pojo.UserUpdateBody;
+import com.project.restfull.api.pojo.UserUpdateRequest;
 import com.project.restfull.api.pojo.WebResponse;
 import com.project.restfull.api.repository.UserRepo;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,16 +39,16 @@ class UserControllerTest {
 
     @Test
     void testRegisterSuccess() throws Exception {
-        UserBody userBody = new UserBody();
-        userBody.setUsername("test");
-        userBody.setName("test");
-        userBody.setPassword("123456");
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername("test");
+        userRequest.setName("test");
+        userRequest.setPassword("123456");
 
         mockMvc.perform(
                 post("http://localhost:8089/api/users")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userBody))
+                        .content(objectMapper.writeValueAsString(userRequest))
         ).andExpectAll(
                 status().isOk()
         ).andDo(result ->{
@@ -59,16 +59,16 @@ class UserControllerTest {
 
     @Test
     void testRegisterBadRequest() throws Exception {
-        UserBody userBody = new UserBody();
-        userBody.setUsername("");
-        userBody.setName("");
-        userBody.setPassword("");
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername("");
+        userRequest.setName("");
+        userRequest.setPassword("");
 
         mockMvc.perform(
                 post("http://localhost:8089/api/users")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userBody))
+                        .content(objectMapper.writeValueAsString(userRequest))
         ).andExpectAll(
                 status().isBadRequest()
         ).andDo(result ->{
@@ -85,16 +85,16 @@ class UserControllerTest {
         user.setPassword("password");
         userRepo.save(user);
 
-        UserBody userBody = new UserBody();
-        userBody.setUsername("test");
-        userBody.setName("test");
-        userBody.setPassword("password");
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername("test");
+        userRequest.setName("test");
+        userRequest.setPassword("password");
 
         mockMvc.perform(
                 post("http://localhost:8089/api/users")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userBody))
+                        .content(objectMapper.writeValueAsString(userRequest))
         ).andExpectAll(
                 status().isBadRequest()
         ).andDo(result ->{
@@ -178,13 +178,13 @@ class UserControllerTest {
 
     @Test
     void updateUserUnauthorized() throws Exception {
-        UserUpdateBody userUpdateBody = new UserUpdateBody();
+        UserUpdateRequest userUpdateRequest = new UserUpdateRequest();
 
         mockMvc.perform(
                 patch("http://localhost:8089/api/users/current")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userUpdateBody))
+                        .content(objectMapper.writeValueAsString(userUpdateRequest))
         ).andExpectAll(
                 status().isUnauthorized()
         ).andDo(result -> {
@@ -203,15 +203,15 @@ class UserControllerTest {
         user.setTokenExpiredAt(System.currentTimeMillis() + 100000L);
         userRepo.save(user);
 
-        UserUpdateBody userUpdateBody = new UserUpdateBody();
-        userUpdateBody.setName("acong123");
+        UserUpdateRequest userUpdateRequest = new UserUpdateRequest();
+        userUpdateRequest.setName("acong123");
 
         mockMvc.perform(
                 patch("http://localhost:8089/api/users/current")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("X-TOKEN", user.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userUpdateBody))
+                        .content(objectMapper.writeValueAsString(userUpdateRequest))
         ).andExpectAll(
                 status().isOk()
         ).andDo(result -> {

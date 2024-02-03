@@ -1,7 +1,7 @@
 package com.project.restfull.api.service.impl;
 
 import com.project.restfull.api.model.User;
-import com.project.restfull.api.pojo.LoginBody;
+import com.project.restfull.api.pojo.LoginRequest;
 import com.project.restfull.api.pojo.TokenResponse;
 import com.project.restfull.api.repository.UserRepo;
 import com.project.restfull.api.service.AuthService;
@@ -24,15 +24,15 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public TokenResponse login(LoginBody loginBody) {
-        validationService.validation(loginBody);
+    public TokenResponse login(LoginRequest loginRequest) {
+        validationService.validation(loginRequest);
 
-        User user = userRepo.findUserByUsername(loginBody.getUsername());
+        User user = userRepo.findUserByUsername(loginRequest.getUsername());
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or password wrong");
         }
         // VALIDATE PASSWORD
-        if (loginBody.getPassword().equals(user.getPassword())) {
+        if (loginRequest.getPassword().equals(user.getPassword())) {
             user.setToken(UUID.randomUUID().toString());
             user.setTokenExpiredAt(Utils.next30Days());
             userRepo.save(user);

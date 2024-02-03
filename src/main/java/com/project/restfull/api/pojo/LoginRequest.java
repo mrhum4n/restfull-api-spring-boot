@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginBody implements Serializable {
+public class LoginRequest implements Serializable {
     @NotBlank
     private String username;
 

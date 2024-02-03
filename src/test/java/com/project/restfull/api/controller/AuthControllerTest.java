@@ -3,7 +3,7 @@ package com.project.restfull.api.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.restfull.api.model.User;
-import com.project.restfull.api.pojo.LoginBody;
+import com.project.restfull.api.pojo.LoginRequest;
 import com.project.restfull.api.pojo.TokenResponse;
 import com.project.restfull.api.pojo.WebResponse;
 import com.project.restfull.api.repository.UserRepo;
@@ -38,15 +38,15 @@ class AuthControllerTest {
 
     @Test
     void loginFailedUserNotFound() throws Exception {
-        LoginBody loginBody = new LoginBody();
-        loginBody.setUsername("test");
-        loginBody.setPassword("test");
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setUsername("test");
+        loginRequest.setPassword("test");
 
         mockMvc.perform(
                 post("http://localhost:8089/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginBody))
+                        .content(objectMapper.writeValueAsString(loginRequest))
         ).andExpectAll(
                 status().isUnauthorized()
         ).andDo(result -> {
@@ -63,15 +63,15 @@ class AuthControllerTest {
         user.setPassword("password");
         userRepo.save(user);
 
-        LoginBody loginBody = new LoginBody();
-        loginBody.setUsername("test");
-        loginBody.setPassword("123456");
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setUsername("test");
+        loginRequest.setPassword("123456");
 
         mockMvc.perform(
                 post("http://localhost:8089/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginBody))
+                        .content(objectMapper.writeValueAsString(loginRequest))
         ).andExpectAll(
                 status().isUnauthorized()
         ).andDo(result -> {
@@ -88,15 +88,15 @@ class AuthControllerTest {
         user.setPassword("password");
         userRepo.save(user);
 
-        LoginBody loginBody = new LoginBody();
-        loginBody.setUsername("test");
-        loginBody.setPassword("password");
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setUsername("test");
+        loginRequest.setPassword("password");
 
         mockMvc.perform(
                 post("http://localhost:8089/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginBody))
+                        .content(objectMapper.writeValueAsString(loginRequest))
         ).andExpectAll(
                 status().isOk()
         ).andDo(result -> {

@@ -1,9 +1,9 @@
 package com.project.restfull.api.service.impl;
 
 import com.project.restfull.api.model.User;
-import com.project.restfull.api.pojo.UserBody;
+import com.project.restfull.api.pojo.UserRequest;
 import com.project.restfull.api.pojo.UserResponse;
-import com.project.restfull.api.pojo.UserUpdateBody;
+import com.project.restfull.api.pojo.UserUpdateRequest;
 import com.project.restfull.api.repository.UserRepo;
 import com.project.restfull.api.service.UserService;
 import com.project.restfull.api.service.ValidationService;
@@ -27,21 +27,21 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void register(UserBody userBody) {
-        validationService.validation(userBody);
+    public void register(UserRequest userRequest) {
+        validationService.validation(userRequest);
 
         // VALIDATION USERNAME
-        User userValidation = userRepo.findUserByUsername(userBody.getUsername());
+        User userValidation = userRepo.findUserByUsername(userRequest.getUsername());
         if (userValidation != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already registered!");
         }
         // VALIDATION USERNAME
 
         User user = new User();
-        user.setUsername(userBody.getUsername());
-        user.setUsername(userBody.getName());
+        user.setUsername(userRequest.getUsername());
+        user.setUsername(userRequest.getName());
 //        user.setPassword(passwordEncoder.encode(userBody.getPassword()));
-        user.setPassword(userBody.getPassword());
+        user.setPassword(userRequest.getPassword());
         userRepo.save(user);
     }
 
@@ -55,12 +55,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse updateUser(User user, UserUpdateBody userUpdateBody) {
-        if (Objects.nonNull(userUpdateBody.getName())) {
-            user.setName(userUpdateBody.getName());
+    public UserResponse updateUser(User user, UserUpdateRequest userUpdateRequest) {
+        if (Objects.nonNull(userUpdateRequest.getName())) {
+            user.setName(userUpdateRequest.getName());
         }
-        if (Objects.nonNull(userUpdateBody.getPassword())) {
-            user.setName(userUpdateBody.getPassword());
+        if (Objects.nonNull(userUpdateRequest.getPassword())) {
+            user.setName(userUpdateRequest.getPassword());
         }
         userRepo.save(user);
 

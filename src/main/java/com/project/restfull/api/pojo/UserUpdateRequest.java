@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserUpdateBody {
+public class UserUpdateRequest {
     private String name;
     private String password;
 }
