@@ -16,7 +16,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping(path = "users", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/users", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<String> register(@RequestBody UserBody userBody) {
         userService.register(userBody);
         WebResponse<String> response = new WebResponse<>();
@@ -24,7 +24,7 @@ public class UserController {
         return response;
     }
 
-    @GetMapping(path = "users/current", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/users/current", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<UserResponse> getUser(User user) {
         UserResponse userResponse = userService.getUser(user);
         WebResponse<UserResponse> response = new WebResponse<>();
@@ -32,7 +32,7 @@ public class UserController {
         return response;
     }
 
-    @PatchMapping(path = "users/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(path = "/users/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<UserResponse> updateUser(User user, @RequestBody UserUpdateBody userUpdateBody) {
         UserResponse userResponse = userService.updateUser(user, userUpdateBody);
         WebResponse<UserResponse> response = new WebResponse<>();

@@ -225,4 +225,45 @@ class UserControllerTest {
             assertEquals(userLocal.getPassword(), user.getPassword());
         });
     }
+
+    @Test
+    void loginFailed() throws Exception {
+        mockMvc.perform(
+                delete("http://localhost:8089/api/auth/logout")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                status().isUnauthorized()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void loginSuccess() throws Exception {
+        User user = new User();
+        user.setUsername("test");
+        user.setName("test");
+        user.setPassword("password");
+        user.setToken("user-token");
+        user.setTokenExpiredAt(System.currentTimeMillis() + 100000L);
+        userRepo.save(user);
+
+        mockMvc.perform(
+                delete("http://localhost:8089/api/auth/logout")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-TOKEN", user.getToken())
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNotNull(response.getData());
+            assertEquals("Ok", response.getData());
+
+            User userLocal = userRepo.findUserByUsername(user.getUsername());
+            assertNotNull(userLocal);
+            assertNull(userLocal.getToken());
+            assertNull(userLocal.getTokenExpiredAt());
+        });
+    }
 }

@@ -47,4 +47,12 @@ public class AuthServiceImpl implements AuthService {
         }
         // VALIDATE PASSWORD
     }
+
+    @Override
+    @Transactional
+    public void logout(User user) {
+        user.setToken(null);
+        user.setTokenExpiredAt(null);
+        userRepo.save(user);
+    }
 }
