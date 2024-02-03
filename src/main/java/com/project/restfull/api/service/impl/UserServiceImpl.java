@@ -2,6 +2,7 @@ package com.project.restfull.api.service.impl;
 
 import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.UserBody;
+import com.project.restfull.api.pojo.UserResponse;
 import com.project.restfull.api.repository.UserRepo;
 import com.project.restfull.api.service.UserService;
 import com.project.restfull.api.service.ValidationService;
@@ -10,11 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validator;
-import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -44,5 +40,13 @@ public class UserServiceImpl implements UserService {
 //        user.setPassword(passwordEncoder.encode(userBody.getPassword()));
         user.setPassword(userBody.getPassword());
         userRepo.save(user);
+    }
+
+    @Override
+    public UserResponse getUser(User user) {
+        UserResponse userResponse = new UserResponse();
+        userResponse.setUsername(user.getUsername());
+        userResponse.setName(user.getName());
+        return userResponse;
     }
 }
