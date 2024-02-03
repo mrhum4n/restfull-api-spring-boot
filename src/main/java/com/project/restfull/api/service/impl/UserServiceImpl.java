@@ -54,6 +54,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponse updateUser(User user, UserUpdateBody userUpdateBody) {
         if (Objects.nonNull(userUpdateBody.getName())) {
             user.setName(userUpdateBody.getName());
