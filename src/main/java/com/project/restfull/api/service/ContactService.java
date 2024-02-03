@@ -6,4 +6,5 @@ import com.project.restfull.api.pojo.CreateContactRequest;
 
 public interface ContactService {
     ContactResponse createContact(User user, CreateContactRequest request);
+    ContactResponse getContact(User user, String id);
 }

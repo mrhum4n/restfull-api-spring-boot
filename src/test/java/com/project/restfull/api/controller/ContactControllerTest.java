@@ -2,6 +2,7 @@ package com.project.restfull.api.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.restfull.api.model.Contact;
 import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.ContactResponse;
 import com.project.restfull.api.pojo.CreateContactRequest;
@@ -17,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -111,6 +113,51 @@ class ContactControllerTest {
             assertEquals("123456789", response.getData().getPhone());
 
             assertTrue(contactRepo.existsById(response.getData().getId()));
+        });
+    }
+
+    @Test
+    void getContactNotFound() throws Exception {
+        mockMvc.perform(
+                get("http://localhost:8089/api/contacts/123")
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                status().isNotFound()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void getContactSuccess() throws Exception {
+        User user = userRepo.findUserByUsername("test");
+        assertNotNull(user);
+
+        Contact contact = new Contact();
+        contact.setFirstName("Mr");
+        contact.setLastName("Shit man");
+        contact.setEmail("shitman@example.com");
+        contact.setPhone("666");
+        contact.setUser(user);
+        contactRepo.save(contact);
+
+        mockMvc.perform(
+                get("http://localhost:8089/api/contacts/" + contact.getId())
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<ContactResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNull(response.getErrors());
+            assertNotNull(response.getData());
+            assertEquals(contact.getId(), response.getData().getId());
+            assertEquals(contact.getFirstName(), response.getData().getFirstName());
+            assertEquals(contact.getLastName(), response.getData().getLastName());
+            assertEquals(contact.getEmail(), response.getData().getEmail());
+            assertEquals(contact.getPhone(), response.getData().getPhone());
         });
     }
 }

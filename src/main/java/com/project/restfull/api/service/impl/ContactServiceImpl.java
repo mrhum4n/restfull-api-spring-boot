@@ -8,7 +8,10 @@ import com.project.restfull.api.repository.ContactRepo;
 import com.project.restfull.api.service.ContactService;
 import com.project.restfull.api.service.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ContactServiceImpl implements ContactService {
@@ -18,6 +21,7 @@ public class ContactServiceImpl implements ContactService {
     private ValidationService validationService;
 
     @Override
+    @Transactional
     public ContactResponse createContact(User user, CreateContactRequest request) {
         validationService.validation(request);
 
@@ -28,6 +32,24 @@ public class ContactServiceImpl implements ContactService {
         contact.setEmail(request.getEmail());
         contact.setUser(user);
         contactRepo.save(contact);
+
+        ContactResponse response = new ContactResponse();
+        response.setId(contact.getId());
+        response.setFirstName(contact.getFirstName());
+        response.setLastName(contact.getLastName());
+        response.setPhone(contact.getPhone());
+        response.setEmail(contact.getEmail());
+
+        return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ContactResponse getContact(User user, String id) {
+        Contact contact = contactRepo.findFirstByUserAndId(user.getId(), id);
+        if (contact == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
+        }
 
         ContactResponse response = new ContactResponse();
         response.setId(contact.getId());
