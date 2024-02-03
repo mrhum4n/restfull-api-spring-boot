@@ -6,6 +6,7 @@ import com.project.restfull.api.model.Contact;
 import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.ContactResponse;
 import com.project.restfull.api.pojo.CreateContactRequest;
+import com.project.restfull.api.pojo.UpdateContactRequest;
 import com.project.restfull.api.pojo.WebResponse;
 import com.project.restfull.api.repository.ContactRepo;
 import com.project.restfull.api.repository.UserRepo;
@@ -18,8 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -158,6 +158,99 @@ class ContactControllerTest {
             assertEquals(contact.getLastName(), response.getData().getLastName());
             assertEquals(contact.getEmail(), response.getData().getEmail());
             assertEquals(contact.getPhone(), response.getData().getPhone());
+        });
+    }
+
+    @Test
+    void updateContactNotFound() throws Exception {
+        UpdateContactRequest request = new UpdateContactRequest();
+        request.setFirstName("hihi");
+        request.setLastName("Acong");
+        request.setEmail("example@example.com");
+        request.setPhone("123");
+
+        mockMvc.perform(
+                put("http://localhost:8089/api/contacts/123")
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpectAll(
+                status().isNotFound()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void updateContactBadRequest() throws Exception {
+        User user = userRepo.findUserByUsername("test");
+        assertNotNull(user);
+
+        Contact contact = new Contact();
+        contact.setFirstName("Mr");
+        contact.setLastName("Shit man");
+        contact.setEmail("shitman@example.com");
+        contact.setPhone("666");
+        contact.setUser(user);
+        contactRepo.save(contact);
+
+        UpdateContactRequest request = new UpdateContactRequest();
+        request.setFirstName("");
+        request.setLastName("Acong");
+        request.setEmail("fucking wrong email");
+        request.setPhone("");
+
+        mockMvc.perform(
+                put("http://localhost:8089/api/contacts/" + contact.getId())
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpectAll(
+                status().isBadRequest()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void updateContactSuccess() throws Exception {
+        User user = userRepo.findUserByUsername("test");
+        assertNotNull(user);
+
+        Contact contact = new Contact();
+        contact.setFirstName("Mr");
+        contact.setLastName("Shit man");
+        contact.setEmail("shitman@example.com");
+        contact.setPhone("666");
+        contact.setUser(user);
+        contactRepo.save(contact);
+
+        UpdateContactRequest request = new UpdateContactRequest();
+        request.setFirstName("kleg");
+        request.setLastName("ci");
+        request.setEmail("kleg.ci@example.com");
+        request.setPhone("696969");
+
+        mockMvc.perform(
+                put("http://localhost:8089/api/contacts/" + contact.getId())
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<ContactResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNull(response.getErrors());
+            assertNotNull(response.getData());
+            assertEquals(request.getFirstName(), response.getData().getFirstName());
+            assertEquals(request.getLastName(), response.getData().getLastName());
+            assertEquals(request.getEmail(), response.getData().getEmail());
+            assertEquals(request.getPhone(), response.getData().getPhone());
         });
     }
 }

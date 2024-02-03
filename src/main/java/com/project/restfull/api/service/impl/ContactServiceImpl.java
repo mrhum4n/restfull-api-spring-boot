@@ -4,6 +4,7 @@ import com.project.restfull.api.model.Contact;
 import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.ContactResponse;
 import com.project.restfull.api.pojo.CreateContactRequest;
+import com.project.restfull.api.pojo.UpdateContactRequest;
 import com.project.restfull.api.repository.ContactRepo;
 import com.project.restfull.api.service.ContactService;
 import com.project.restfull.api.service.ValidationService;
@@ -50,6 +51,32 @@ public class ContactServiceImpl implements ContactService {
         if (contact == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
         }
+
+        ContactResponse response = new ContactResponse();
+        response.setId(contact.getId());
+        response.setFirstName(contact.getFirstName());
+        response.setLastName(contact.getLastName());
+        response.setPhone(contact.getPhone());
+        response.setEmail(contact.getEmail());
+
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public ContactResponse updateContact(User user, UpdateContactRequest request) {
+        validationService.validation(request);
+
+        Contact contact = contactRepo.findFirstByUserAndId(user.getId(), request.getId());
+        if (contact == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
+        }
+
+        contact.setFirstName(request.getFirstName());
+        contact.setLastName(request.getLastName());
+        contact.setEmail(request.getEmail());
+        contact.setPhone(request.getPhone());
+        contactRepo.save(contact);
 
         ContactResponse response = new ContactResponse();
         response.setId(contact.getId());
