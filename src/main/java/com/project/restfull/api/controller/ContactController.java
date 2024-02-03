@@ -40,4 +40,12 @@ public class ContactController {
         response.setData(contactResponse);
         return response;
     }
+
+    @DeleteMapping(path = "/contacts/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<String> deleteContact(User user, @PathVariable("id") String id) {
+        contactService.deleteContact(user,id);
+        WebResponse<String> response = new WebResponse<>();
+        response.setData("Ok");
+        return response;
+    }
 }

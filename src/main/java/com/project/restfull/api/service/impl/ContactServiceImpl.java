@@ -87,4 +87,14 @@ public class ContactServiceImpl implements ContactService {
 
         return response;
     }
+
+    @Override
+    @Transactional
+    public void deleteContact(User user, String id) {
+        Contact contact = contactRepo.findFirstByUserAndId(user.getId(), id);
+        if (contact == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
+        }
+        contactRepo.delete(contact);
+    }
 }

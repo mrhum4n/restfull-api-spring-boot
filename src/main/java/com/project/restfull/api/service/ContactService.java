@@ -9,4 +9,5 @@ public interface ContactService {
     ContactResponse createContact(User user, CreateContactRequest request);
     ContactResponse getContact(User user, String id);
     ContactResponse updateContact(User user, UpdateContactRequest request);
+    void deleteContact(User user, String id);
 }
