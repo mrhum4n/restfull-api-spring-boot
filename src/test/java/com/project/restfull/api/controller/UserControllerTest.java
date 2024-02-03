@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.UserBody;
 import com.project.restfull.api.pojo.UserResponse;
+import com.project.restfull.api.pojo.UserUpdateBody;
 import com.project.restfull.api.pojo.WebResponse;
 import com.project.restfull.api.repository.UserRepo;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -173,6 +173,56 @@ class UserControllerTest {
         ).andDo(result -> {
             WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
             assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void updateUserUnauthorized() throws Exception {
+        UserUpdateBody userUpdateBody = new UserUpdateBody();
+
+        mockMvc.perform(
+                patch("http://localhost:8089/api/users/current")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userUpdateBody))
+        ).andExpectAll(
+                status().isUnauthorized()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void updateUserSuccess() throws Exception {
+        User user = new User();
+        user.setUsername("test");
+        user.setName("test");
+        user.setPassword("password");
+        user.setToken("user-token");
+        user.setTokenExpiredAt(System.currentTimeMillis() + 100000L);
+        userRepo.save(user);
+
+        UserUpdateBody userUpdateBody = new UserUpdateBody();
+        userUpdateBody.setName("acong123");
+
+        mockMvc.perform(
+                patch("http://localhost:8089/api/users/current")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-TOKEN", user.getToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userUpdateBody))
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<UserResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNull(response.getErrors());
+            assertNotNull(response.getData());
+            assertEquals("acong123", response.getData().getName());
+
+            User userLocal = userRepo.findUserByUsername(user.getUsername());
+            assertNotNull(userLocal);
+            assertEquals(userLocal.getPassword(), user.getPassword());
         });
     }
 }

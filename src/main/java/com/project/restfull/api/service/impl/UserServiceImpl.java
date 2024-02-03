@@ -3,6 +3,7 @@ package com.project.restfull.api.service.impl;
 import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.UserBody;
 import com.project.restfull.api.pojo.UserResponse;
+import com.project.restfull.api.pojo.UserUpdateBody;
 import com.project.restfull.api.repository.UserRepo;
 import com.project.restfull.api.service.UserService;
 import com.project.restfull.api.service.ValidationService;
@@ -11,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Objects;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -47,6 +50,23 @@ public class UserServiceImpl implements UserService {
         UserResponse userResponse = new UserResponse();
         userResponse.setUsername(user.getUsername());
         userResponse.setName(user.getName());
+        return userResponse;
+    }
+
+    @Override
+    public UserResponse updateUser(User user, UserUpdateBody userUpdateBody) {
+        if (Objects.nonNull(userUpdateBody.getName())) {
+            user.setName(userUpdateBody.getName());
+        }
+        if (Objects.nonNull(userUpdateBody.getPassword())) {
+            user.setName(userUpdateBody.getPassword());
+        }
+        userRepo.save(user);
+
+        UserResponse userResponse = new UserResponse();
+        userResponse.setName(user.getName());
+        userResponse.setUsername(user.getUsername());
+
         return userResponse;
     }
 }
