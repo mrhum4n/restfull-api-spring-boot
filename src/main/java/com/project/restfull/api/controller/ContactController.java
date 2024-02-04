@@ -1,14 +1,14 @@
 package com.project.restfull.api.controller;
 
 import com.project.restfull.api.model.User;
-import com.project.restfull.api.pojo.ContactResponse;
-import com.project.restfull.api.pojo.CreateContactRequest;
-import com.project.restfull.api.pojo.UpdateContactRequest;
-import com.project.restfull.api.pojo.WebResponse;
+import com.project.restfull.api.pojo.*;
 import com.project.restfull.api.service.ContactService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api")
@@ -47,5 +47,32 @@ public class ContactController {
         WebResponse<String> response = new WebResponse<>();
         response.setData("Ok");
         return response;
+    }
+
+    @GetMapping(path = "/contacts", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<List<ContactResponse>> searchContact(User user,
+                                                            @RequestParam(value = "name", required = false) String name,
+                                                            @RequestParam(value = "email", required = false) String email,
+                                                            @RequestParam(value = "phone", required = false) String phone,
+                                                            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+                                                            @RequestParam(value = "size", required = false, defaultValue = "5") Integer size) {
+        SearchContactRequest request = new SearchContactRequest();
+        request.setName(name);
+        request.setEmail(email);
+        request.setPhone(phone);
+        request.setPage(page);
+        request.setSize(size);
+
+        Page<ContactResponse> responses = contactService.searchContact(user, request);
+
+        WebResponse<List<ContactResponse>> webResponse = new WebResponse<>();
+        webResponse.setData(responses.getContent());
+        PagingResponse pagingResponse = new PagingResponse();
+        pagingResponse.setCurrentPage(responses.getNumber());
+        pagingResponse.setSize(responses.getSize());
+        pagingResponse.setTotalPage(responses.getTotalPages());
+        webResponse.setPaging(pagingResponse);
+
+        return webResponse;
     }
 }

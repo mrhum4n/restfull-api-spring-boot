@@ -10,6 +10,7 @@ import com.project.restfull.api.pojo.UpdateContactRequest;
 import com.project.restfull.api.pojo.WebResponse;
 import com.project.restfull.api.repository.ContactRepo;
 import com.project.restfull.api.repository.UserRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +19,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Slf4j
 class ContactControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -294,6 +298,59 @@ class ContactControllerTest {
             assertNotNull(response.getData());
             assertEquals("Ok", response.getData());
             assertFalse(contactRepo.existsById(contact.getId()));
+        });
+    }
+
+    @Test
+    void searchContacts() throws Exception {
+        mockMvc.perform(
+                get("http://localhost:8089/api/contacts")
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<List<ContactResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNull(response.getErrors());
+            assertEquals(0, response.getData().size());
+            assertEquals(0, response.getPaging().getTotalPage());
+            assertEquals(0, response.getPaging().getCurrentPage());
+            assertEquals(10, response.getPaging().getSize());
+        });
+    }
+
+    @Test
+    void searchByName() throws Exception {
+        User user = userRepo.findUserByUsername("test");
+        assertNotNull(user);
+
+        for (int i = 0; i < 100; i++) {
+            Contact contact = new Contact();
+            contact.setFirstName("Mr");
+            contact.setLastName("Shit man "+ i);
+            contact.setEmail("shitman@example.com");
+            contact.setPhone("666");
+            contact.setUser(user);
+            contactRepo.save(contact);
+        }
+
+        mockMvc.perform(
+                get("http://localhost:8089/api/contacts")
+                        .queryParam("name", "man")
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<List<ContactResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNull(response.getErrors());
+            log.info("size: {} totalPage: {}, currentPage: {}", response.getPaging().getTotalPage(), response.getPaging().getCurrentPage(), response.getPaging().getSize());
+            assertEquals(5, response.getData().size());
+            assertEquals(20, response.getPaging().getTotalPage());
+            assertEquals(0, response.getPaging().getCurrentPage());
+            assertEquals(5, response.getPaging().getSize());
         });
     }
 }
