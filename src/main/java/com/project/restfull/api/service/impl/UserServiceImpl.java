@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
 
         User user = new User();
         user.setUsername(userRequest.getUsername());
-        user.setUsername(userRequest.getName());
+        user.setName(userRequest.getName());
 //        user.setPassword(passwordEncoder.encode(userBody.getPassword()));
         user.setPassword(userRequest.getPassword());
         userRepo.save(user);
