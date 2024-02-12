@@ -56,7 +56,7 @@ public class AddressServiceImpl implements AddressService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
         }
 
-        Address address = addressRepo.findFirstByContactAndId(contactId, addressId);
+        Address address = addressRepo.findFirstByContactAndId(contact.getId(), addressId);
         if (address == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found");
         }
@@ -74,7 +74,7 @@ public class AddressServiceImpl implements AddressService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
         }
 
-        Address address = addressRepo.findFirstByContactAndId(request.getContactId(), request.getAddressId());
+        Address address = addressRepo.findFirstByContactAndId(contact.getId(), request.getAddressId());
         if (address == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found");
         }
@@ -88,6 +88,22 @@ public class AddressServiceImpl implements AddressService {
         addressRepo.save(address);
 
         return toAddressResponse(address);
+    }
+
+    @Override
+    @Transactional
+    public void delete(User user, String contactId, String addressId) {
+        Contact contact = contactRepo.findFirstByUserAndId(user.getId(), contactId);
+        if (contact == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
+        }
+
+        Address address = addressRepo.findFirstByContactAndId(contact.getId(), addressId);
+        if (address == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found");
+        }
+
+        addressRepo.delete(address);
     }
 
     private AddressResponse toAddressResponse(Address address) {

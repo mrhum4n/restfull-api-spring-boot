@@ -305,4 +305,67 @@ class AddressControllerTest {
             assertEquals(request.getPostalCode(), response.getData().getPostalCode());
         });
     }
+
+    @Test
+    void deleteNotFound() throws Exception {
+        User user = userRepo.findUserByUsername("test");
+        assertNotNull(user);
+
+        Contact contact = new Contact();
+        contact.setFirstName("Mr");
+        contact.setLastName("Shit man");
+        contact.setEmail("shitman@example.com");
+        contact.setPhone("666");
+        contact.setUser(user);
+        contactRepo.save(contact);
+
+        mockMvc.perform(
+                delete("http://localhost:8089/api/contact/"+ contact.getId() +"/addresses/test")
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                status().isNotFound()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void deleteSuccess() throws Exception {
+        User user = userRepo.findUserByUsername("test");
+        assertNotNull(user);
+
+        Contact contact = new Contact();
+        contact.setFirstName("Mr");
+        contact.setLastName("Shit man");
+        contact.setEmail("shitman@example.com");
+        contact.setPhone("666");
+        contact.setUser(user);
+        contactRepo.save(contact);
+
+        Address address = new Address();
+        address.setStreet("Jalan");
+        address.setCity("Kota");
+        address.setProvince("Provinsi");
+        address.setCountry("Negara");
+        address.setPostalCode("123");
+        address.setContact(contact);
+        addressRepo.save(address);
+
+        mockMvc.perform(
+                delete("http://localhost:8089/api/contact/"+ contact.getId() +"/addresses/"+ address.getId())
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNull(response.getErrors());
+            assertEquals("Ok", response.getData());
+            assertFalse(addressRepo.existsById(address.getId()));
+        });
+    }
 }

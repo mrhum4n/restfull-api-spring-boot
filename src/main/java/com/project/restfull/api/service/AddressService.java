@@ -9,4 +9,5 @@ public interface AddressService {
     AddressResponse create(User user, CreateAddressRequest request);
     AddressResponse getById(User user, String contactId, String addressId);
     AddressResponse update(User user, UpdateAddressRequest request);
+    void delete(User user, String contactId, String addressId);
 }

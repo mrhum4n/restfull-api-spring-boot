@@ -42,4 +42,12 @@ public class AddressController {
         webResponse.setData(response);
         return webResponse;
     }
+
+    @DeleteMapping(path = "/contact/{contact_id}/addresses/{address_id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<String> delete(User user, @PathVariable("contact_id") String contactId, @PathVariable("address_id") String addressId) {
+        addressService.delete(user, contactId, addressId);
+        WebResponse<String> webResponse = new WebResponse<>();
+        webResponse.setData("Ok");
+        return webResponse;
+    }
 }
