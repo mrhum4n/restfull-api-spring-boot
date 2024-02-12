@@ -47,6 +47,22 @@ public class AddressServiceImpl implements AddressService {
         return toAddressResponse(address);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public AddressResponse getById(User user, String contactId, String addressId) {
+        Contact contact = contactRepo.findFirstByUserAndId(user.getId(),contactId);
+        if (contact == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
+        }
+
+        Address address = addressRepo.findFirstByContactAndId(contactId, addressId);
+        if (address == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found");
+        }
+
+        return toAddressResponse(address);
+    }
+
     private AddressResponse toAddressResponse(Address address) {
         AddressResponse response = new AddressResponse();
         response.setId(address.getId());

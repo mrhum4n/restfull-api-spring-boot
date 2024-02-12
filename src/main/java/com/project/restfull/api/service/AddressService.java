@@ -6,4 +6,5 @@ import com.project.restfull.api.pojo.CreateAddressRequest;
 
 public interface AddressService {
     AddressResponse create(User user, CreateAddressRequest request);
+    AddressResponse getById(User user, String contactId, String addressId);
 }
