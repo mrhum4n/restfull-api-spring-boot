@@ -316,7 +316,7 @@ class ContactControllerTest {
             assertEquals(0, response.getData().size());
             assertEquals(0, response.getPaging().getTotalPage());
             assertEquals(0, response.getPaging().getCurrentPage());
-            assertEquals(10, response.getPaging().getSize());
+            assertEquals(5, response.getPaging().getSize());
         });
     }
 
