@@ -5,6 +5,7 @@ import com.project.restfull.api.model.Contact;
 import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.AddressResponse;
 import com.project.restfull.api.pojo.CreateAddressRequest;
+import com.project.restfull.api.pojo.UpdateAddressRequest;
 import com.project.restfull.api.repository.AddressRepo;
 import com.project.restfull.api.repository.ContactRepo;
 import com.project.restfull.api.service.AddressService;
@@ -59,6 +60,32 @@ public class AddressServiceImpl implements AddressService {
         if (address == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found");
         }
+
+        return toAddressResponse(address);
+    }
+
+    @Override
+    @Transactional
+    public AddressResponse update(User user, UpdateAddressRequest request) {
+        validationService.validation(request);
+
+        Contact contact = contactRepo.findFirstByUserAndId(user.getId(), request.getContactId());
+        if (contact == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
+        }
+
+        Address address = addressRepo.findFirstByContactAndId(request.getContactId(), request.getAddressId());
+        if (address == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found");
+        }
+
+        address.setStreet(request.getStreet());
+        address.setCity(request.getCity());
+        address.setProvince(request.getProvince());
+        address.setCountry(request.getCountry());
+        address.setPostalCode(request.getPostalCode());
+
+        addressRepo.save(address);
 
         return toAddressResponse(address);
     }

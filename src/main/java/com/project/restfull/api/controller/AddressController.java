@@ -3,6 +3,7 @@ package com.project.restfull.api.controller;
 import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.AddressResponse;
 import com.project.restfull.api.pojo.CreateAddressRequest;
+import com.project.restfull.api.pojo.UpdateAddressRequest;
 import com.project.restfull.api.pojo.WebResponse;
 import com.project.restfull.api.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,16 @@ public class AddressController {
     @GetMapping(path = "/contact/{contactId}/addresses/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<AddressResponse> getById(User user, @PathVariable("contactId") String contactId, @PathVariable("addressId") String addressId) {
         AddressResponse response = addressService.getById(user, contactId, addressId);
+        WebResponse<AddressResponse> webResponse = new WebResponse<>();
+        webResponse.setData(response);
+        return webResponse;
+    }
+
+    @PutMapping(path = "/contact/{contactId}/addresses/{addressId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<AddressResponse> update(User user, @RequestBody UpdateAddressRequest request, @PathVariable("contactId") String contactId, @PathVariable("addressId") String addressId) {
+        request.setContactId(contactId);
+        request.setAddressId(addressId);
+        AddressResponse response = addressService.update(user, request);
         WebResponse<AddressResponse> webResponse = new WebResponse<>();
         webResponse.setData(response);
         return webResponse;

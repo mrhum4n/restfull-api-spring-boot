@@ -7,6 +7,7 @@ import com.project.restfull.api.model.Contact;
 import com.project.restfull.api.model.User;
 import com.project.restfull.api.pojo.AddressResponse;
 import com.project.restfull.api.pojo.CreateAddressRequest;
+import com.project.restfull.api.pojo.UpdateAddressRequest;
 import com.project.restfull.api.pojo.WebResponse;
 import com.project.restfull.api.repository.AddressRepo;
 import com.project.restfull.api.repository.ContactRepo;
@@ -20,8 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -216,6 +216,93 @@ class AddressControllerTest {
             assertEquals(address.getProvince(), response.getData().getProvince());
             assertEquals(address.getCountry(), response.getData().getCountry());
             assertEquals(address.getPostalCode(), response.getData().getPostalCode());
+        });
+    }
+
+    @Test
+    void updateBadRequest() throws Exception {
+        User user = userRepo.findUserByUsername("test");
+        assertNotNull(user);
+
+        Contact contact = new Contact();
+        contact.setFirstName("Mr");
+        contact.setLastName("Shit man");
+        contact.setEmail("shitman@example.com");
+        contact.setPhone("666");
+        contact.setUser(user);
+        contactRepo.save(contact);
+
+        Address address = new Address();
+        address.setStreet("Jalan");
+        address.setCity("Kota");
+        address.setProvince("Provinsi");
+        address.setCountry("Negara");
+        address.setPostalCode("123");
+        address.setContact(contact);
+        addressRepo.save(address);
+
+        UpdateAddressRequest request = new UpdateAddressRequest();
+        request.setCountry("");
+
+        mockMvc.perform(
+                put("http://localhost:8089/api/contact/"+ contact.getId() +"/addresses/"+ address.getId())
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpectAll(
+                status().isBadRequest()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void updateSuccess() throws Exception {
+        User user = userRepo.findUserByUsername("test");
+        assertNotNull(user);
+
+        Contact contact = new Contact();
+        contact.setFirstName("Mr");
+        contact.setLastName("Shit man");
+        contact.setEmail("shitman@example.com");
+        contact.setPhone("666");
+        contact.setUser(user);
+        contactRepo.save(contact);
+
+        Address address = new Address();
+        address.setStreet("Jalan");
+        address.setCity("Kota");
+        address.setProvince("Provinsi");
+        address.setCountry("Negara");
+        address.setPostalCode("123");
+        address.setContact(contact);
+        addressRepo.save(address);
+
+        UpdateAddressRequest request = new UpdateAddressRequest();
+        request.setStreet("Jl. mawar");
+        request.setCity("Denpasar");
+        request.setProvince("Bali");
+        request.setCountry("Indonesia");
+        request.setPostalCode("123");
+
+        mockMvc.perform(
+                put("http://localhost:8089/api/contact/"+ contact.getId() +"/addresses/"+ address.getId())
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<AddressResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNull(response.getErrors());
+            assertEquals(request.getStreet(), response.getData().getStreet());
+            assertEquals(request.getCity(), response.getData().getCity());
+            assertEquals(request.getProvince(), response.getData().getProvince());
+            assertEquals(request.getCountry(), response.getData().getCountry());
+            assertEquals(request.getPostalCode(), response.getData().getPostalCode());
         });
     }
 }
