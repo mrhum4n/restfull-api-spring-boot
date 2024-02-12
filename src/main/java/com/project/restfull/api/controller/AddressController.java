@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api")
 public class AddressController {
@@ -48,6 +50,14 @@ public class AddressController {
         addressService.delete(user, contactId, addressId);
         WebResponse<String> webResponse = new WebResponse<>();
         webResponse.setData("Ok");
+        return webResponse;
+    }
+
+    @GetMapping(path = "/contact/{contact_id}/addresses", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<List<AddressResponse>> getList(User user, @PathVariable("contact_id") String contactId) {
+        List<AddressResponse> response = addressService.findAll(user, contactId);
+        WebResponse<List<AddressResponse>> webResponse = new WebResponse<>();
+        webResponse.setData(response);
         return webResponse;
     }
 }

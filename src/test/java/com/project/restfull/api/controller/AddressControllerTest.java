@@ -20,6 +20,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -366,6 +368,59 @@ class AddressControllerTest {
             assertNull(response.getErrors());
             assertEquals("Ok", response.getData());
             assertFalse(addressRepo.existsById(address.getId()));
+        });
+    }
+
+    @Test
+    void listAddressNotFound() throws Exception {
+        mockMvc.perform(
+                get("http://localhost:8089/api/contact/salah/addresses")
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                status().isNotFound()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void listAddressSuccess() throws Exception {
+        User user = userRepo.findUserByUsername("test");
+        assertNotNull(user);
+
+        Contact contact = new Contact();
+        contact.setFirstName("Mr");
+        contact.setLastName("Shit man");
+        contact.setEmail("shitman@example.com");
+        contact.setPhone("666");
+        contact.setUser(user);
+        contactRepo.save(contact);
+
+        for (int i = 0; i < 5; i++) {
+            Address address = new Address();
+            address.setStreet("Jalan"+ i);
+            address.setCity("Kota");
+            address.setProvince("Provinsi");
+            address.setCountry("Negara");
+            address.setPostalCode("123");
+            address.setContact(contact);
+            addressRepo.save(address);
+        }
+
+        mockMvc.perform(
+                get("http://localhost:8089/api/contact/"+ contact.getId() +"/addresses")
+                        .header("X-TOKEN", "user-token")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<List<AddressResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+            assertNull(response.getErrors());
+            assertEquals(5, response.getData().size());
         });
     }
 }

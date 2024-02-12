@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class AddressServiceImpl implements AddressService {
     @Autowired
@@ -104,6 +107,18 @@ public class AddressServiceImpl implements AddressService {
         }
 
         addressRepo.delete(address);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AddressResponse> findAll(User user, String contactId) {
+        Contact contact = contactRepo.findFirstByUserAndId(user.getId(), contactId);
+        if (contact == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
+        }
+
+        List<Address> addresses = addressRepo.findAllByContact(contact.getId());
+        return addresses.stream().map(address -> toAddressResponse(address)).collect(Collectors.toList());
     }
 
     private AddressResponse toAddressResponse(Address address) {
